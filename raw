@@ -1,0 +1,35 @@
+
+use warehouse compute_wh;
+
+create or replace database cricket;
+create or replace schema cricket.land;
+create or replace schema cricket.raw;
+create or replace schema cricket.clean;
+create or replace schema cricket.consumption;
+
+show schemas in database cricket;
+
+create or replace file format cricket.land.my_json_format
+type='json'
+null_if=('\\n','null','')
+strip_outer_array=true
+comment='JSon file format with outer stip array falg true'
+
+create or replace stage cricket.land.my_stg;
+list @cricket.land.my_stg;
+
+list @cricket.land.my_stg/cricket/json/;
+
+select 
+    t.$1:meta::variant as meta,
+    t.$1:info::variant as info,
+    t.$1:innings::array as innings,
+    metadata$filename as file_name,
+    metadata$file_row_number::int as file_row_number,
+    metadata$file_content_key::text as file_content_key,
+    metadata$file_last_modified as stg_modified_ts
+from 
+    @cricket.land.my_stg/cricket/json/1384401.json(file_format => cricket.land.my_json_format) t;
+
+
+
